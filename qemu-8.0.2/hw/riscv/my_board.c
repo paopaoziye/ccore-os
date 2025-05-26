@@ -16,6 +16,7 @@
 #include "hw/riscv/numa.h"
 #include "hw/intc/riscv_aclint.h"
 #include "hw/intc/riscv_aplic.h"
+#include "hw/intc/sifive_plic.h"
 
 #include "chardev/char.h"
 #include "sysemu/device_tree.h"
@@ -27,6 +28,12 @@
 static const MemMapEntry my_board_memmap[] = {
     [MY_BOARD_MROM]      = {        0x0,        0x8000 },   
     [MY_BOARD_SRAM]      = {     0x8000,        0x8000 },
+    [MY_BOARD_CLINT]     = { 0x02000000,       0x10000 }, 
+    [MY_BOARD_PLIC]      = { 0x0c000000,     MY_BOARD_PLIC_SIZE(MY_BOARD_CPUS_MAX * 2) },
+    [MY_BOARD_UART0]     = { 0x10000000,         0x100 },
+    [MY_BOARD_UART1]     = { 0x10001000,         0x100 },
+    [MY_BOARD_UART2]     = { 0x10002000,         0x100 }, 
+    [MY_BOARD_RTC]       = { 0x10003000,        0x1000 },
     [MY_BOARD_FLASH]     = { 0x20000000,     0x2000000 }, 
     [MY_BOARD_DRAM]      = { 0x80000000,    0x40000000 },  
 };
@@ -146,6 +153,82 @@ static void my_board_flash_create(MachineState *machine){
                                 sysbus_mmio_get_region(SYS_BUS_DEVICE(dev),
                                                        0));    
 }
+/* 创建plic，参考virt_create_plic */
+static void my_board_plic_create(MachineState *machine){
+    //获取MyBoardState以及socket节点数量
+    MyBoardState *s = RISCV_MY_BOARD_MACHINE(machine);
+    int socket_count = riscv_socket_count(machine);
+    //为每个socket节点创建一个plic
+    int i,hart_count,base_hartid;
+    for ( i = 0; i < socket_count; i++) {
+        //获取当前socket节点的hart数量和起始id
+        hart_count = riscv_socket_hart_count(machine, i);
+        base_hartid = riscv_socket_first_hartid(machine, i);
+        char *plic_hart_config;
+        //生成PLIC Hart配置字符串
+        plic_hart_config = riscv_plic_hart_config_string(machine->smp.cpus);
+        //设置对应PLIC的属性，分别为基地址、hart配置、hart数量、hart起始id等
+        s->plic[i] = sifive_plic_create(
+            my_board_memmap[MY_BOARD_PLIC].base + i *my_board_memmap[MY_BOARD_PLIC].size ,
+            plic_hart_config, hart_count , base_hartid,
+            MY_BOARD_PLIC_NUM_SOURCES,
+            MY_BOARD_PLIC_NUM_PRIORITIES,
+            MY_BOARD_PLIC_PRIORITY_BASE,
+            MY_BOARD_PLIC_PENDING_BASE,
+            MY_BOARD_PLIC_ENABLE_BASE,
+            MY_BOARD_PLIC_ENABLE_STRIDE,
+            MY_BOARD_PLIC_CONTEXT_BASE,
+            MY_BOARD_PLIC_CONTEXT_STRIDE,
+            my_board_memmap[MY_BOARD_PLIC].size);
+        g_free(plic_hart_config);
+    }
+}
+/* 创建clint，参考virt_machine_init */
+static void my_board_aclint_create(MachineState *machine){
+    int i , hart_count,base_hartid;
+    int socket_count = riscv_socket_count(machine);
+    //为每个socket节点创建clint
+    for ( i = 0; i < socket_count; i++) {
+        //获取当前socket节点的hart数量和起始id
+        base_hartid = riscv_socket_first_hartid(machine, i);
+        hart_count = riscv_socket_hart_count(machine, i);
+        //创建clint的软件中断模块
+        riscv_aclint_swi_create(
+        my_board_memmap[MY_BOARD_CLINT].base + i *my_board_memmap[MY_BOARD_CLINT].size,
+        base_hartid, hart_count, false);
+        //创建clint的时钟中断模块
+        riscv_aclint_mtimer_create(my_board_memmap[MY_BOARD_CLINT].base +
+             + i *my_board_memmap[MY_BOARD_CLINT].size+ RISCV_ACLINT_SWI_SIZE,
+            RISCV_ACLINT_DEFAULT_MTIMER_SIZE, base_hartid, hart_count,
+            RISCV_ACLINT_DEFAULT_MTIMECMP, RISCV_ACLINT_DEFAULT_MTIME,
+            RISCV_ACLINT_DEFAULT_TIMEBASE_FREQ, true);
+    }
+}
+/* 创建rtc，参考virt_machine_init */
+static void my_board_rtc_create(MachineState *machine){   
+    //获取MyBoardState
+    MyBoardState *s = RISCV_MY_BOARD_MACHINE(machine);
+    //创建goldfish_rtc进行内存映射，并设置其中断号和引脚
+    sysbus_create_simple("goldfish_rtc", my_board_memmap[MY_BOARD_RTC].base,
+        qdev_get_gpio_in(DEVICE(s->plic[0]), MY_BOARD_RTC_IRQ));
+}
+/* 创建三路uart，参考virt_machine_init */
+static void my_board_serial_create(MachineState *machine){
+    //获取MyBoardState以及system_memory
+    MemoryRegion *system_memory = get_system_memory();
+    MyBoardState *s = RISCV_MY_BOARD_MACHINE(machine);
+    //创建goldfish_rtc进行内存映射，并设置了设置其中断号、引脚、波特率以及字节序
+    //此外还设置了串口的后端输入/输出，在QEMU启动时可以指定
+    serial_mm_init(system_memory, my_board_memmap[MY_BOARD_UART0].base,
+        0, qdev_get_gpio_in(DEVICE(s->plic[0]), MY_BOARD_UART0_IRQ), 399193,
+        serial_hd(0), DEVICE_LITTLE_ENDIAN);
+    serial_mm_init(system_memory, my_board_memmap[MY_BOARD_UART1].base,
+        0, qdev_get_gpio_in(DEVICE(s->plic[0]), MY_BOARD_UART1_IRQ), 399193,
+        serial_hd(1), DEVICE_LITTLE_ENDIAN);
+    serial_mm_init(system_memory, my_board_memmap[MY_BOARD_UART2].base,
+        0, qdev_get_gpio_in(DEVICE(s->plic[0]), MY_BOARD_UART2_IRQ), 399193,
+        serial_hd(2), DEVICE_LITTLE_ENDIAN);
+}
 /* 板卡初始化函数 */
 static void my_board_machine_init(MachineState *machine){
     //创建CPU
@@ -154,6 +237,14 @@ static void my_board_machine_init(MachineState *machine){
     my_board_memory_create(machine);
     //创建flash
     my_board_flash_create(machine);
+    //创建plic
+    my_board_plic_create(machine);
+    //创建clint
+    my_board_aclint_create(machine);
+    //创建rtc
+    my_board_rtc_create(machine);
+    //创建serial
+    my_board_serial_create(machine);
 }
 /* 实例初始化函数 */
 static void my_board_machine_instance_init(Object *obj){

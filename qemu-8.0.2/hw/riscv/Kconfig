@@ -88,3 +88,8 @@ config SPIKE
 config MY_BOARD
     bool
     select PFLASH_CFI01
+    select SIFIVE_PLIC
+    select RISCV_APLIC
+    select RISCV_ACLINT
+    select GOLDFISH_RTC
+    select SERIAL

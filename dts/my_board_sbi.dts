@@ -1,0 +1,269 @@
+/dts-v1/;
+
+/ {
+	//地址和大小使用64位表示（2个32位单元）
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+	//兼容的开发板名称以及具体型号
+	compatible = "riscv-my-board";
+	model = "riscv-my-board,qemu";
+    //指定系统的默认输出设备路径为uart0
+	chosen {
+		stdout-path = "/soc/uart0@10000000";
+	};
+	//定义物理内存，起始地址为0x80000000，大小为0x40000000（1GB）
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x0 0x40000000>;
+	};
+    //CPU集合，设置各个CPU的属性
+	cpus {
+		//CPU编号使用32位，不需要描述大小，时钟基准为10MHz
+		#address-cells = <0x1>;
+		#size-cells = <0x0>;
+		timebase-frequency = <0x989680>;
+        //定义cpu0
+		cpu0: cpu@0 {
+			phandle = <0xf>;                      //CPU在设备树中的标识符，可以被其他设备引用
+			device_type = "cpu";                  //声明设备类型为CPU
+			reg = <0x0>;                          //CPU的逻辑编号
+			status = "okay";                      //CPU状态，表示被启用
+			compatible = "riscv";                 //所属架构
+			riscv,isa = "rv64imafdcsu";           //支持的指令集扩展
+			mmu-type = "riscv,sv48";              //内存管理单元属性，使用4级页表，39位虚拟地址空间
+            //每个CPU的中断控制器
+			cpu0_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;         //中断标识符使用32位
+				interrupt-controller;             //声明这是中断控制器
+				compatible = "riscv,cpu-intc";    //标识这是riscv架构下的CPU本地中断控制器
+				phandle = <0x10>;                 //中断控制器在设备树中的标识符
+			};
+		};
+
+		cpu1: cpu@1 {
+			phandle = <0xd>;
+			device_type = "cpu";
+			reg = <0x1>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcsu";
+			mmu-type = "riscv,sv48";
+
+			cpu1_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0xe>;
+			};
+		};
+
+		cpu2: cpu@2 {
+			phandle = <0xb>;
+			device_type = "cpu";
+			reg = <0x2>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcsu";
+			mmu-type = "riscv,sv48";
+
+			cpu2_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0xc>;
+			};
+		};
+
+		cpu3: cpu@3 {
+			phandle = <0x9>;
+			device_type = "cpu";
+			reg = <0x3>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcsu";
+			mmu-type = "riscv,sv48";
+
+			cpu3_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0xa>;
+			};
+		};
+
+		cpu4: cpu@4 {
+			phandle = <0x7>;
+			device_type = "cpu";
+			reg = <0x4>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcsu";
+			mmu-type = "riscv,sv48";
+
+			cpu4_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0x8>;
+			};
+		};
+
+		cpu5: cpu@5 {
+			phandle = <0x5>;
+			device_type = "cpu";
+			reg = <0x5>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcsu";
+			mmu-type = "riscv,sv48";
+
+			cpu5_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0x6>;
+			};
+		};
+
+		cpu6: cpu@6 {
+			phandle = <0x3>;
+			device_type = "cpu";
+			reg = <0x6>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcsu";
+			mmu-type = "riscv,sv48";
+
+			cpu6_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0x4>;
+			};
+		};
+
+		cpu7: cpu@7 {
+			phandle = <0x1>;
+			device_type = "cpu";
+			reg = <0x7>;
+			status = "okay";
+			compatible = "riscv";
+			riscv,isa = "rv64imafdcsu";
+			mmu-type = "riscv,sv48";
+
+			cpu7_intc: interrupt-controller {
+				#interrupt-cells = <0x1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+				phandle = <0x2>;
+			};
+		};
+        //描述CPU的拓扑结构，其中有一个CPU集群，包含8个核心
+		cpu-map {
+
+			cluster0 {
+
+				core0 {
+					cpu = <0xf>;
+				};
+
+				core1 {
+					cpu = <0xd>;
+				};
+
+				core2 {
+					cpu = <0xb>;
+				};
+
+				core3 {
+					cpu = <0x9>;
+				};
+
+				core4 {
+					cpu = <0x7>;
+				};
+
+				core5 {
+					cpu = <0x5>;
+				};
+
+				core6 {
+					cpu = <0x3>;
+				};
+
+				core7 {
+					cpu = <0x1>;
+				};
+			};
+		};
+	};
+    //片上外设
+	soc {
+		//地址和大小使用64位表示
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		//简单总线类型
+		compatible = "simple-bus";
+		//地址转换表为空，表示1:1映射
+		ranges;                                    
+        //串口设备信息，起始地址为10000000
+		uart0: uart0@10000000 {
+			interrupts = <0xa>;                  //对应中断号
+			interrupt-parent = <0x11>;           //所属的中断控制器即plic
+			clock-frequency = <0x384000>;        //时钟频率
+			reg = <0x0 0x10000000 0x0 0x1000>;   //起始地址和大小
+			compatible = "ns16550a";             //兼容标准 NS16550A UART
+		};
+
+		uart1: uart1@10001000 {
+			interrupts = <0xa>;
+			interrupt-parent = <0x11>;
+			clock-frequency = <0x384000>;
+			reg = <0x0 0x10001000 0x0 0x1000>;
+			compatible = "ns16550a";
+		};
+
+        uart2: uart2@10002000 {
+			interrupts = <0xa>;
+			interrupt-parent = <0x11>;
+			clock-frequency = <0x384000>;
+			reg = <0x0 0x10002000 0x0 0x1000>;
+			compatible = "ns16550a";
+		};
+        //plic设备信息，起始地址为c000000
+		plic@c000000 {
+			phandle = <0x11>;                    //plic在设备树中的标识符
+			riscv,ndev = <0x35>;                 //支持的最大外部中断源的数量
+			reg = <0x0 0xc000000 0x0 0x210000>;  //起始地址和大小
+
+			//各个CPU对应的外部中断号，格式为<CPU句柄 中断号 CPU句柄 中断号 ...>
+			interrupts-extended = <&cpu0_intc 0xb &cpu0_intc 0x9 
+			                       &cpu1_intc 0xb &cpu1_intc 0x9 
+								   &cpu2_intc 0xb &cpu2_intc 0x9 
+								   &cpu3_intc 0xb &cpu3_intc 0x9 
+								   &cpu4_intc 0xb &cpu4_intc 0x9 
+								   &cpu5_intc 0xb &cpu5_intc 0x9 
+								   &cpu6_intc 0xb &cpu6_intc 0x9 
+								   &cpu7_intc 0xb &cpu7_intc 0x9>;
+
+			interrupt-controller;                //声明此节点为中断控制器
+			compatible = "riscv,plic0";          //标识这是一个符合riscv架构的plic
+			#interrupt-cells = <0x1>;            //中断标识符使用32位
+			#address-cells = <0x0>;              //不需要描述地址
+		};
+        //clint设备信息，起始地址为2000000
+		clint@2000000 {
+            //各个CPU对应的定时器中断号和核间中断号
+			interrupts-extended = <&cpu0_intc 0x3 &cpu0_intc 0x7 
+			                       &cpu1_intc 0x3 &cpu1_intc 0x7 
+								   &cpu2_intc 0x3 &cpu2_intc 0x7 
+								   &cpu3_intc 0x3 &cpu3_intc 0x7 
+								   &cpu4_intc 0x3 &cpu4_intc 0x7 
+								   &cpu5_intc 0x3 &cpu5_intc 0x7 
+								   &cpu6_intc 0x3 &cpu6_intc 0x7 
+								   &cpu7_intc 0x3 &cpu7_intc 0x7>;
+			reg = <0x0 0x2000000 0x0 0x10000>;   //起始地址和大小
+			compatible = "riscv,clint0";         //标识这是一个符合riscv架构的clint
+		};
+	};
+};

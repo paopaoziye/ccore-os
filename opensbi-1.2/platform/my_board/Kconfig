@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# 一些配置选项，表示支持设备树、设备树域划分功能和设备树的性能监控单元
+config PLATFORM_MY_BOARD
+	bool
+	select FDT
+	select FDT_DOMAIN
+	select FDT_PMU
+	default y

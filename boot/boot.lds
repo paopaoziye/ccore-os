@@ -1,6 +1,7 @@
 OUTPUT_ARCH("riscv")       /* 指定目标架构 */
 
 ENTRY(_start)              /* 指定程序入口 */
+
 /* 定义名为flash的内存域，指定权限、起始地址和长度 */
 MEMORY
 {

@@ -1,0 +1,86 @@
+
+There are no discarded input sections
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+ram              0x0000000080200000 0x0000000008000000 axrl!w
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD entry.o
+LOAD sbi.o
+LOAD main.o
+LOAD printk.o
+LOAD vsprintf.o
+
+.text           0x0000000080200000      0x650
+ *(.text .text.*)
+ .text          0x0000000080200000        0x0 entry.o
+ .text.entry    0x0000000080200000        0xe entry.o
+                0x0000000080200000                _start
+ .text          0x000000008020000e       0xb2 sbi.o
+                0x000000008020000e                sbi_ecall
+                0x0000000080200092                sbi_console_putchar
+ .text          0x00000000802000c0       0x1e main.o
+                0x00000000802000c0                os_main
+ .text          0x00000000802000de      0x142 printk.o
+                0x000000008020019a                printk
+                0x00000000802001f2                panic
+ .text          0x0000000080200220      0x430 vsprintf.o
+                0x0000000080200220                _vsnprintf
+
+.rodata         0x0000000080200650       0xa4
+ *(.rodata .rodata.*)
+ .rodata        0x0000000080200650       0x15 main.o
+ *fill*         0x0000000080200665        0x3 
+ .rodata        0x0000000080200668       0x32 printk.o
+ *fill*         0x000000008020069a        0x2 
+ .rodata        0x000000008020069c       0x58 vsprintf.o
+
+.data           0x00000000802006f4      0x90c
+                0x0000000080201000                . = ALIGN (0x1000)
+ *fill*         0x00000000802006f4      0x90c 
+ *(.sdata .sdata.*)
+ *(.data .data.*)
+ .data          0x0000000080201000        0x0 entry.o
+ .data          0x0000000080201000        0x0 sbi.o
+ .data          0x0000000080201000        0x0 main.o
+ .data          0x0000000080201000        0x0 printk.o
+ .data          0x0000000080201000        0x0 vsprintf.o
+                [!provide]                        PROVIDE (_data_end = .)
+
+.bss            0x0000000080201000    0x103e8
+ *(.sbss .sbss.*)
+ *(.bss .bss.*)
+ .bss           0x0000000080201000        0x0 entry.o
+ .bss.stack     0x0000000080201000    0x10000 entry.o
+                0x0000000080201000                boot_stack_lower_bound
+                0x0000000080211000                boot_stack_top
+ .bss           0x0000000080211000        0x0 sbi.o
+ .bss           0x0000000080211000        0x0 main.o
+ .bss           0x0000000080211000      0x3e8 printk.o
+ .bss           0x00000000802113e8        0x0 vsprintf.o
+ *(COMMON)
+OUTPUT(os.elf elf64-littleriscv)
+
+.riscv.attributes
+                0x0000000000000000       0x66
+ .riscv.attributes
+                0x0000000000000000       0x64 entry.o
+ .riscv.attributes
+                0x0000000000000064       0x66 sbi.o
+ .riscv.attributes
+                0x00000000000000ca       0x66 main.o
+ .riscv.attributes
+                0x0000000000000130       0x66 printk.o
+ .riscv.attributes
+                0x0000000000000196       0x66 vsprintf.o
+
+.comment        0x0000000000000000        0xf
+ .comment       0x0000000000000000        0xf sbi.o
+                                         0x10 (size before relaxing)
+ .comment       0x000000000000000f       0x10 main.o
+ .comment       0x000000000000000f       0x10 printk.o
+ .comment       0x000000000000000f       0x10 vsprintf.o

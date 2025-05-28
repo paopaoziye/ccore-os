@@ -17,7 +17,7 @@ fi
 make -j16$PROCESSORS
 make install
 
-echo "------------------------- 编译lowlevelboot即start.s-----------------------"
+echo "-------------------编译lowlevelboot即start.s---------------------------"
 # 如果没有output/lowlevelboot目录则创建
 if [ ! -d "$SHELL_FOLDER/output/lowlevelboot" ]; then  
 mkdir $SHELL_FOLDER/output/lowlevelboot
@@ -33,7 +33,7 @@ $CROSS_PREFIX-objcopy -O binary -S $SHELL_FOLDER/output/lowlevelboot/lowlevel_fw
 # 使用gnu工具生成反汇编文件，方便调试分析
 $CROSS_PREFIX-objdump --source --demangle --disassemble --reloc --wide $SHELL_FOLDER/output/lowlevelboot/lowlevel_fw.elf > $SHELL_FOLDER/output/lowlevelboot/lowlevel_fw.lst
 
-echo "------------------------- 编译opensbi --------------------------------"
+echo "-------------------------编译opensbi ---------------------------------"
 # 如果没有output/opensbi目录则创建
 if [ ! -d "$SHELL_FOLDER/output/opensbi" ]; then  
 mkdir $SHELL_FOLDER/output/opensbi
@@ -51,7 +51,23 @@ cd $SHELL_FOLDER/dts
 # 编译设备树文件生成.dtb文件
 dtc -I dts -O dtb -o $SHELL_FOLDER/output/opensbi/my_board_sbi.dtb my_board_sbi.dts
 
-echo "------------------------- 合成firmware固件 ----------------------------"
+echo "---------------------编译trusted_domaini -----------------------------"
+# 如果没有output/trusted_domaini目录则创建
+if [ ! -d "$SHELL_FOLDER/output/trusted_domain" ]; then  
+mkdir $SHELL_FOLDER/output/trusted_domain
+fi  
+# 切换到output/trusted_domaini
+cd $SHELL_FOLDER/trusted_domain
+# 将startup.s编译为startup.o
+$CROSS_PREFIX-gcc -x assembler-with-cpp -c startup.s -o $SHELL_FOLDER/output/trusted_domain/startup.o
+# 将startup.o链接为trusted_fw.elf，指定链接脚本为link.lds，并生成对应的map文件
+$CROSS_PREFIX-gcc -nostartfiles -T./link.lds -Wl,-Map=$SHELL_FOLDER/output/trusted_domain/trusted_fw.map -Wl,--gc-sections $SHELL_FOLDER/output/trusted_domain/startup.o -o $SHELL_FOLDER/output/trusted_domain/trusted_fw.elf
+# 基于trusted_fw.elf生成trusted_fw.bin
+$CROSS_PREFIX-objcopy -O binary -S $SHELL_FOLDER/output/trusted_domain/trusted_fw.elf $SHELL_FOLDER/output/trusted_domain/trusted_fw.bin
+# 生成反汇编文件，方便调试分析
+$CROSS_PREFIX-objdump --source --demangle --disassemble --reloc --wide $SHELL_FOLDER/output/trusted_domain/trusted_fw.elf > $SHELL_FOLDER/output/trusted_domain/trusted_fw.lst
+
+echo "-----------------------合成firmware固件 -------------------------------"
 # 如果没有output/fw目录则创建
 if [ ! -d "$SHELL_FOLDER/output/fw" ]; then  
 mkdir $SHELL_FOLDER/output/fw
@@ -68,3 +84,5 @@ dd of=fw.bin bs=1k conv=notrunc seek=0 if=$SHELL_FOLDER/output/lowlevelboot/lowl
 dd of=fw.bin bs=1k conv=notrunc seek=512 if=$SHELL_FOLDER/output/opensbi/my_board_sbi.dtb
 # 写入fw_jump.bin，地址偏移量为2MB，因此 fw_jump.bin的地址偏移量为0x2000000
 dd of=fw.bin bs=1k conv=notrunc seek=2k if=$SHELL_FOLDER/output/opensbi/fw_jump.bin
+# 写入trusted_fw.bin，地址偏移量为4MB，因此fw_jump.bin的地址偏移量为0x400000
+dd of=fw.bin bs=1k conv=notrunc seek=4K if=$SHELL_FOLDER/output/trusted_domain/trusted_fw.bin

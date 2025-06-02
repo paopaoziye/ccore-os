@@ -1,6 +1,9 @@
 #ifndef OS_SBI_H__
 #define OS_SBI_H__
+//防止stdint.h和types.h发生冲突
+#ifndef OS_TYPES_H__
 #include <stdint.h>
+#endif
 // sbi调用名和EID的映射
 enum sbi_ext_id {
 	SBI_EXT_0_1_SET_TIMER = 0x0,
@@ -29,4 +32,5 @@ struct sbiret {
 
 //函数声明
 void sbi_console_putchar(int ch);
+int sbi_console_getchar(void);
 #endif  

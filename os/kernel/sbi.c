@@ -33,3 +33,9 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
 void sbi_console_putchar(int ch){
 	sbi_ecall(SBI_EXT_0_1_CONSOLE_PUTCHAR, 0, ch, 0, 0, 0, 0, 0);
 }
+/* 通过SBI调用读取串口字符 */
+int sbi_console_getchar(void){
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_0_1_CONSOLE_GETCHAR, 0, 0, 0, 0, 0, 0, 0);
+	return ret.error;
+}

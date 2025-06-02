@@ -10,73 +10,173 @@ ram              0x0000000080200000 0x0000000008000000 axrl!w
 Linker script and memory map
 
 LOAD entry.o
+LOAD switch.o
+LOAD kerneltrap.o
 LOAD sbi.o
 LOAD main.o
 LOAD printk.o
 LOAD vsprintf.o
+LOAD app.o
+LOAD string.o
+LOAD syscall.o
+LOAD trap.o
+LOAD task.o
+LOAD test.o
+LOAD printf.o
+LOAD assert.o
 
-.text           0x0000000080200000      0x650
+.text           0x0000000080200000     0x110c
  *(.text .text.*)
  .text          0x0000000080200000        0x0 entry.o
  .text.entry    0x0000000080200000        0xe entry.o
                 0x0000000080200000                _start
- .text          0x000000008020000e       0xb2 sbi.o
-                0x000000008020000e                sbi_ecall
-                0x0000000080200092                sbi_console_putchar
- .text          0x00000000802000c0       0x1e main.o
-                0x00000000802000c0                os_main
- .text          0x00000000802000de      0x142 printk.o
-                0x000000008020019a                printk
-                0x00000000802001f2                panic
- .text          0x0000000080200220      0x430 vsprintf.o
-                0x0000000080200220                _vsnprintf
+ .text          0x000000008020000e       0x6a switch.o
+                0x000000008020000e                __switch
+ *fill*         0x0000000080200078        0x8 
+ .text          0x0000000080200080       0xc6 kerneltrap.o
+                0x0000000080200080                __alltraps
+                0x00000000802000e0                __restore
+ .text          0x0000000080200146       0xea sbi.o
+                0x0000000080200146                sbi_ecall
+                0x00000000802001ca                sbi_console_putchar
+                0x00000000802001f8                sbi_console_getchar
+ .text          0x0000000080200230       0x2a main.o
+                0x0000000080200230                os_main
+ .text          0x000000008020025a      0x142 printk.o
+                0x0000000080200316                printk
+                0x000000008020036e                panic
+ .text          0x000000008020039c      0x430 vsprintf.o
+                0x000000008020039c                _vsnprintf
+ .text          0x00000000802007cc       0xc4 app.o
+                0x00000000802007cc                syscall
+                0x0000000080200800                sys_write
+                0x0000000080200836                sys_read
+                0x000000008020086e                sys_yield
+ .text          0x0000000080200890       0x92 string.o
+                0x0000000080200890                strlen
+                0x00000000802008cc                memcpy
+ .text          0x0000000080200922      0x19a syscall.o
+                0x0000000080200922                __SYSCALL
+                0x00000000802009b4                __sys_write
+                0x00000000802009f2                __sys_read
+                0x0000000080200aa6                __sys_yield
+ .text          0x0000000080200abc       0xc8 trap.o
+                0x0000000080200af0                trap_handler
+                0x0000000080200b64                trap_init
+ .text          0x0000000080200b84      0x394 task.o
+                0x0000000080200cbe                task_create
+                0x0000000080200d8e                schedule
+                0x0000000080200e92                task_delay
+                0x0000000080200ed4                run_first_task
+ .text          0x0000000080200f18       0xa2 test.o
+                0x0000000080200f18                task1
+                0x0000000080200f3c                task2
+                0x0000000080200f60                task3
+                0x0000000080200f84                task_init
+ .text          0x0000000080200fba       0xe6 printf.o
+                0x0000000080201024                printf
+                0x000000008020107c                getchar
+ .text          0x00000000802010a0       0x6c assert.o
+                0x00000000802010be                assertion_failure
 
-.rodata         0x0000000080200650       0xa4
+.rodata         0x0000000080201110      0x26c
  *(.rodata .rodata.*)
- .rodata        0x0000000080200650       0x15 main.o
- *fill*         0x0000000080200665        0x3 
- .rodata        0x0000000080200668       0x32 printk.o
- *fill*         0x000000008020069a        0x2 
- .rodata        0x000000008020069c       0x58 vsprintf.o
+ .rodata        0x0000000080201110       0x15 main.o
+ *fill*         0x0000000080201125        0x3 
+ .rodata        0x0000000080201128       0x32 printk.o
+ *fill*         0x000000008020115a        0x2 
+ .rodata        0x000000008020115c       0x58 vsprintf.o
+ *fill*         0x00000000802011b4        0x4 
+ .rodata        0x00000000802011b8       0x88 syscall.o
+ .rodata        0x0000000080201240       0x14 trap.o
+ *fill*         0x0000000080201254        0x4 
+ .rodata        0x0000000080201258       0x67 task.o
+ *fill*         0x00000000802012bf        0x1 
+ .rodata        0x00000000802012c0       0x43 test.o
+ *fill*         0x0000000080201303        0x5 
+ .rodata        0x0000000080201308       0x74 assert.o
 
-.data           0x00000000802006f4      0x90c
-                0x0000000080201000                . = ALIGN (0x1000)
- *fill*         0x00000000802006f4      0x90c 
+.data           0x000000008020137c      0xc84
+                0x0000000080202000                . = ALIGN (0x1000)
+ *fill*         0x000000008020137c      0xc84 
  *(.sdata .sdata.*)
  *(.data .data.*)
- .data          0x0000000080201000        0x0 entry.o
- .data          0x0000000080201000        0x0 sbi.o
- .data          0x0000000080201000        0x0 main.o
- .data          0x0000000080201000        0x0 printk.o
- .data          0x0000000080201000        0x0 vsprintf.o
+ .data          0x0000000080202000        0x0 entry.o
+ .data          0x0000000080202000        0x0 switch.o
+ .data          0x0000000080202000        0x0 kerneltrap.o
+ .data          0x0000000080202000        0x0 sbi.o
+ .data          0x0000000080202000        0x0 main.o
+ .data          0x0000000080202000        0x0 printk.o
+ .data          0x0000000080202000        0x0 vsprintf.o
+ .data          0x0000000080202000        0x0 app.o
+ .data          0x0000000080202000        0x0 string.o
+ .data          0x0000000080202000        0x0 syscall.o
+ .data          0x0000000080202000        0x0 trap.o
+ .data          0x0000000080202000        0x0 task.o
+ .data          0x0000000080202000        0x0 test.o
+ .data          0x0000000080202000        0x0 printf.o
+ .data          0x0000000080202000        0x0 assert.o
                 [!provide]                        PROVIDE (_data_end = .)
 
-.bss            0x0000000080201000    0x103e8
+.bss            0x0000000080202000    0x38c88
  *(.sbss .sbss.*)
  *(.bss .bss.*)
- .bss           0x0000000080201000        0x0 entry.o
- .bss.stack     0x0000000080201000    0x10000 entry.o
-                0x0000000080201000                boot_stack_lower_bound
-                0x0000000080211000                boot_stack_top
- .bss           0x0000000080211000        0x0 sbi.o
- .bss           0x0000000080211000        0x0 main.o
- .bss           0x0000000080211000      0x3e8 printk.o
- .bss           0x00000000802113e8        0x0 vsprintf.o
+ .bss           0x0000000080202000        0x0 entry.o
+ .bss.stack     0x0000000080202000    0x10000 entry.o
+                0x0000000080202000                boot_stack_lower_bound
+                0x0000000080212000                boot_stack_top
+ .bss           0x0000000080212000        0x0 switch.o
+ .bss           0x0000000080212000        0x0 kerneltrap.o
+ .bss           0x0000000080212000        0x0 sbi.o
+ .bss           0x0000000080212000        0x0 main.o
+ .bss           0x0000000080212000      0x3e8 printk.o
+ .bss           0x00000000802123e8        0x0 vsprintf.o
+ .bss           0x00000000802123e8        0x0 app.o
+ .bss           0x00000000802123e8        0x0 string.o
+ .bss           0x00000000802123e8        0x0 syscall.o
+ .bss           0x00000000802123e8        0x0 trap.o
+ .bss           0x00000000802123e8    0x284b8 task.o
+                0x00000000802123e8                KernelStack
+                0x00000000802263e8                UserStack
+                0x000000008023a3e8                tasks
+ .bss           0x000000008023a8a0        0x0 test.o
+ .bss           0x000000008023a8a0      0x3e8 printf.o
+ .bss           0x000000008023ac88        0x0 assert.o
  *(COMMON)
 OUTPUT(os.elf elf64-littleriscv)
 
 .riscv.attributes
-                0x0000000000000000       0x66
+                0x0000000000000000       0x6a
  .riscv.attributes
                 0x0000000000000000       0x64 entry.o
  .riscv.attributes
-                0x0000000000000064       0x66 sbi.o
+                0x0000000000000064       0x64 switch.o
  .riscv.attributes
-                0x00000000000000ca       0x66 main.o
+                0x00000000000000c8       0x68 kerneltrap.o
  .riscv.attributes
-                0x0000000000000130       0x66 printk.o
+                0x0000000000000130       0x66 sbi.o
  .riscv.attributes
-                0x0000000000000196       0x66 vsprintf.o
+                0x0000000000000196       0x66 main.o
+ .riscv.attributes
+                0x00000000000001fc       0x66 printk.o
+ .riscv.attributes
+                0x0000000000000262       0x66 vsprintf.o
+ .riscv.attributes
+                0x00000000000002c8       0x66 app.o
+ .riscv.attributes
+                0x000000000000032e       0x66 string.o
+ .riscv.attributes
+                0x0000000000000394       0x66 syscall.o
+ .riscv.attributes
+                0x00000000000003fa       0x6a trap.o
+ .riscv.attributes
+                0x0000000000000464       0x6a task.o
+ .riscv.attributes
+                0x00000000000004ce       0x66 test.o
+ .riscv.attributes
+                0x0000000000000534       0x66 printf.o
+ .riscv.attributes
+                0x000000000000059a       0x66 assert.o
 
 .comment        0x0000000000000000        0xf
  .comment       0x0000000000000000        0xf sbi.o
@@ -84,3 +184,11 @@ OUTPUT(os.elf elf64-littleriscv)
  .comment       0x000000000000000f       0x10 main.o
  .comment       0x000000000000000f       0x10 printk.o
  .comment       0x000000000000000f       0x10 vsprintf.o
+ .comment       0x000000000000000f       0x10 app.o
+ .comment       0x000000000000000f       0x10 string.o
+ .comment       0x000000000000000f       0x10 syscall.o
+ .comment       0x000000000000000f       0x10 trap.o
+ .comment       0x000000000000000f       0x10 task.o
+ .comment       0x000000000000000f       0x10 test.o
+ .comment       0x000000000000000f       0x10 printf.o
+ .comment       0x000000000000000f       0x10 assert.o

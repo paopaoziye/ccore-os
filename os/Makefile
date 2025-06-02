@@ -10,13 +10,25 @@ OBJDUMP = ${CROSS_COMPILE}objdump
 
 #汇编源文件列表
 SRCS_ASM = \
-	entry.S
+	entry.S \
+	switch.S \
+	kerneltrap.S \
 #c源文件列表
 SRCS_C = \
 	sbi.c \
 	main.c \
 	printk.c \
 	vsprintf.c \
+	app.c \
+	string.c \
+	syscall.c \
+	trap.c \
+	task.c \
+	test.c \
+	printf.c \
+	assert.c \
+	
+
 	
 
 #将源文件列表转化为对应的目标文件列表，避免手动列出每个.o文件

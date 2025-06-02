@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "task.h": "c",
+        "sbi.h": "c",
+        "stdint.h": "c",
+        "stdarg.h": "c",
+        "os.h": "c",
+        "stdio.h": "c",
+        "riscv.h": "c"
+    }
+}

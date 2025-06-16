@@ -5,7 +5,8 @@
 #include "riscv.h"
 #include "types.h"
 #include "os.h"
-//人物状态
+
+//任务状态
 typedef enum TaskState{
     UnInit,
     Ready,

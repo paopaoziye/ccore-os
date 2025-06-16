@@ -4,13 +4,16 @@
 #define USER_STACK_SIZE (4096 * 2)
 #define KERNEL_STACK_SIZE (4096 * 2)
 #define MAX_TASKS 10
+
 //为内核栈和用户栈开辟空间
 uint8_t KernelStack[MAX_TASKS][KERNEL_STACK_SIZE];
 uint8_t UserStack[MAX_TASKS][USER_STACK_SIZE];
+
 //任务队列，当前任务号和任务总数
 struct TaskControlBlock tasks[MAX_TASKS];
 static int _current = 0;
 static int _top = 0;
+
 /* 初始化任务上下文 */
 static struct TaskContext task_context_init(reg_t kstack_ptr){
     struct TaskContext task_ctx;
@@ -32,6 +35,7 @@ static struct TaskContext task_context_init(reg_t kstack_ptr){
 
     return task_ctx;
 }
+
 /* 初始化任务的中断/异常上下文 */
 static TrapContext* task_trapcontext_init(int id,void (*task_entry)(void)){
     //在任务内核栈中分配空间
@@ -65,6 +69,7 @@ void task_create(void (*task_entry)(void)){
     }
     
 }
+
 /* 任务调度器，使用轮转调度 */
 void schedule(){
     //错误检查
@@ -90,11 +95,13 @@ void schedule(){
     }
     
 }
+
 /* 延迟函数的简单实现 */
 void task_delay(volatile int count){
 	count *= 50000;
 	while (count--);
 }
+
 /* 启动系统的第一个任务 */
 void run_first_task(){
     //将task0的状态修改为Running并使用__switch切换到该任务

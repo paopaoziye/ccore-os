@@ -6,6 +6,9 @@
         "stdarg.h": "c",
         "os.h": "c",
         "stdio.h": "c",
-        "riscv.h": "c"
+        "riscv.h": "c",
+        "timer.h": "c",
+        "context.h": "c",
+        "assert.h": "c"
     }
 }

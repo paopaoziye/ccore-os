@@ -27,6 +27,7 @@ SRCS_C = \
 	test.c \
 	printf.c \
 	assert.c \
+	timer.c \
 	
 
 	

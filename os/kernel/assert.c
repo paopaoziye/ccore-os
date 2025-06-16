@@ -1,4 +1,5 @@
 #include "assert.h"
+
 /* 强制阻塞 */
 static void spin(char *name)
 {

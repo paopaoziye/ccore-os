@@ -4,17 +4,35 @@
 TrapContext* trap_handler(TrapContext* cx){
 	//读取 scause 寄存器
     reg_t scause = r_scause();
-	switch (scause)
+	reg_t cause_code = scause & 0xfff;
+	if(scause & 0x8000000000000000)
 	{
-	case 8:
-		__SYSCALL(cx->a7,cx->a0,cx->a1,cx->a2);
-		break;
-	default:
-		printk("undfined scause:%d\n",scause);
-		break;
+		switch (cause_code)
+		{
+		//时钟中断
+		case 5:
+			set_next_trigger();
+			schedule();
+			break;
+		default:
+			printk("undfined interrrupt scause:%x\n",scause);
+			break;
+		}
 	}
-	
-	cx->sepc += 8;
+	else
+	{
+		switch (cause_code)
+		{
+		//系统调用
+		case 8:
+			cx->a0 = __SYSCALL(cx->a7,cx->a0,cx->a1,cx->a2);
+			cx->sepc += 8;
+			break;
+		default:
+			printk("undfined exception scause:%x\n",scause);
+			break;
+		}
+	}
 
 	return cx;
 }

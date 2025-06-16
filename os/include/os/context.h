@@ -1,6 +1,8 @@
 #ifndef OS_CONTEXT_H__
 #define OS_CONTEXT_H__
+
 #include "types.h"
+
 /* S模式的trap上下文，即需要保护的寄存器的值 */
 typedef struct TrapContext{
 	/* 通用寄存器 */

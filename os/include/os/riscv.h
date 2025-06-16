@@ -1,6 +1,34 @@
 #ifndef OS_RISCV_H__
 #define OS_RISCV_H__
+
 #include "types.h"
+
+// sie 寄存器S模式中断相关设置位
+#define SIE_SEIE (1L << 9) //外部中断
+#define SIE_STIE (1L << 5) //时钟中断
+#define SIE_SSIE (1L << 1) //软件中断
+
+/* 读写 sie 寄存器，记录了S/M模式下的中断设置 */
+static inline reg_t r_sie()
+{
+  reg_t x;
+  asm volatile("csrr %0, sie" : "=r" (x) );
+  return x;
+}
+
+static inline void w_sie(reg_t x)
+{
+  asm volatile("csrw sie, %0" : : "r" (x));
+}
+
+/* 读取 mtime 寄存器，当 mtime 寄存器的值超过mtimecmp会触发时钟中断 */
+static inline reg_t r_mtime()
+{
+  reg_t x;
+  asm volatile("rdtime %0" : "=r"(x));
+  return x;
+}
+
 /* 读取 sepc 寄存器的值，记录了trap发生之前的执行的最后一条指令地址 */
 static inline reg_t r_sepc(){
   reg_t x;

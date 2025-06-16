@@ -1,10 +1,12 @@
 #ifndef OS_SBI_H__
 #define OS_SBI_H__
+
 //防止stdint.h和types.h发生冲突
 #ifndef OS_TYPES_H__
 #include <stdint.h>
 #endif
-// sbi调用名和EID的映射
+
+// sbi扩展类和EID的映射
 enum sbi_ext_id {
 	SBI_EXT_0_1_SET_TIMER = 0x0,
 	SBI_EXT_0_1_CONSOLE_PUTCHAR = 0x1,
@@ -24,6 +26,11 @@ enum sbi_ext_id {
 	SBI_EXT_PMU = 0x504D55,
 };
 
+// sbi功能名和EID的映射
+enum sbi_ext_time_fid {
+	SBI_EXT_TIME_SET_TIMER = 0,
+};
+
 // sbi返回结构体
 struct sbiret {
 	long error;  //SBI错误码
@@ -33,4 +40,5 @@ struct sbiret {
 //函数声明
 void sbi_console_putchar(int ch);
 int sbi_console_getchar(void);
+void sbi_set_timer(uint64_t stime_value);
 #endif  

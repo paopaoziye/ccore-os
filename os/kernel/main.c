@@ -1,9 +1,7 @@
 #include "os.h"
-extern void task_init(void);
+extern void frame_allocator_test();
 void os_main(){
     printk("Os is running......\n");
-    timer_init();
-    trap_init();
-    task_init();
-    run_first_task();
+    frame_allocator_test();
+    while(1){}
 }

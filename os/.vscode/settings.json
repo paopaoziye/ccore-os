@@ -9,6 +9,11 @@
         "riscv.h": "c",
         "timer.h": "c",
         "context.h": "c",
-        "assert.h": "c"
+        "assert.h": "c",
+        "string.h": "c",
+        "stack.h": "c",
+        "alloc.h": "c",
+        "types.h": "c",
+        "address.h": "c"
     }
 }

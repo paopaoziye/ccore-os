@@ -17,3 +17,11 @@ void* memcpy(void* dest,const void *src,size_t count){
     }
     return dest;
 }
+/* 将count个字符ch填充到dest起始处 */
+void* memset(void *dest,int ch,size_t count){
+    char *ptr = dest;
+    while(count--){
+        *ptr++ = ch;
+    }
+    return dest;
+}

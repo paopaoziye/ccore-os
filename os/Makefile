@@ -28,10 +28,9 @@ SRCS_C = \
 	printf.c \
 	assert.c \
 	timer.c \
-	
-
-	
-
+	alloc.c \
+	address.c \
+	stack.c \
 #将源文件列表转化为对应的目标文件列表，避免手动列出每个.o文件
 OBJS = $(SRCS_ASM:.S=.o)
 OBJS += $(SRCS_C:.c=.o)

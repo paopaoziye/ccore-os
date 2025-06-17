@@ -1,5 +1,8 @@
 #include "alloc.h"
 
+//内存分配器
+static StackFrameAllocator FrameAllocatorImpl;
+
 /* 初始化内存分配器,其中[current,end)为可分配物理页号空间 */
 void StackFrameAllocator_init(StackFrameAllocator* allocator,PhysPageNum l,PhysPageNum r){
     allocator->current = l.value;
@@ -45,4 +48,25 @@ void StackFrameAllocator_dealloc(StackFrameAllocator *allocator, PhysPageNum ppn
     }
     //回收物理内存页号
     push(&(allocator->recycled), ppnValue);
+}
+
+/* 初始化可用内存 */
+void frame_alloctor_init(){
+    //初始化时 kernelend 需向上取整
+    StackFrameAllocator_init(&FrameAllocatorImpl, \
+            ceil_phys(phys_addr_from_size_t((uint64_t)kernelend)), \
+            ceil_phys(phys_addr_from_size_t(PHYSTOP)));
+    printk("Memoery start:%p\n",kernelend);
+    printk("Memoery end:%p\n",PHYSTOP);
+}
+
+/* 分配一页内存 */
+PhysPageNum kalloc(void){
+    PhysPageNum frame =  StackFrameAllocator_alloc(&FrameAllocatorImpl);
+    return frame;
+}
+
+/* 释放一页内存 */
+void kfree(PhysPageNum ppn){
+    StackFrameAllocator_dealloc(&FrameAllocatorImpl,ppn);
 }

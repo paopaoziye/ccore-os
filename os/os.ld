@@ -1,17 +1,19 @@
-OUTPUT_ARCH(riscv)   /* 指定目标架构 */
-
-ENTRY(_start)        /* 设置入口函数为_start */
-
-/* 定义名为ram的内存域，指定权限、起始地址和长度 */
+OUTPUT_ARCH(riscv)
+ENTRY(_start)
+BASE_ADDRESS = 0x80200000;
+/* 定义一个内存区域，并指明其起始地址、长度和属性 */
 MEMORY
 { 
 	ram (rxai!w) : ORIGIN = 0x80200000, LENGTH = 128M
 }
-/* 定义代码段、只读数据段、数据段和bss段，并将其依次存放到ram内存区域 */
+/* 段布局 */
 SECTIONS
 {
+    skernel = .;             /* 定义内核起始内存地址 */
 	.text : {
 		*(.text .text.*)
+	. = ALIGN(0x1000);       /* 代码段结束地址按页对齐 */
+    PROVIDE(etext = .);      /* 代码段结束地址 */
 	} >ram
 
 	.rodata : {
@@ -30,4 +32,6 @@ SECTIONS
 		*(.bss .bss.*)
 		*(COMMON)
 	} >ram
+	
+	PROVIDE(kernelend = .);  /* 内核结束地址 */
 }

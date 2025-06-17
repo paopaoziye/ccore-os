@@ -24,7 +24,6 @@ SRCS_C = \
 	syscall.c \
 	trap.c \
 	task.c \
-	test.c \
 	printf.c \
 	assert.c \
 	timer.c \
